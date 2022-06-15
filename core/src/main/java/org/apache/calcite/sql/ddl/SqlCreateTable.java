@@ -38,6 +38,7 @@ import java.util.Objects;
 public class SqlCreateTable extends SqlCreate {
   public final SqlIdentifier name;
   public final @Nullable SqlNodeList columnList;
+  public final @Nullable SqlNodeList tableOptions;
   public final @Nullable SqlNode query;
 
   private static final SqlOperator OPERATOR =
@@ -45,10 +46,12 @@ public class SqlCreateTable extends SqlCreate {
 
   /** Creates a SqlCreateTable. */
   protected SqlCreateTable(SqlParserPos pos, boolean replace, boolean ifNotExists,
-      SqlIdentifier name, @Nullable SqlNodeList columnList, @Nullable SqlNode query) {
+      SqlIdentifier name, @Nullable SqlNodeList columnList, @Nullable SqlNodeList tableOptions,
+      @Nullable SqlNode query) {
     super(OPERATOR, pos, replace, ifNotExists);
     this.name = Objects.requireNonNull(name, "name");
     this.columnList = columnList; // may be null
+    this.tableOptions = tableOptions; // may be null
     this.query = query; // for "CREATE TABLE ... AS query"; may be null
   }
 

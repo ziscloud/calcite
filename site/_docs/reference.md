@@ -3099,7 +3099,7 @@ attributeDef:
 tableElement:
       columnName type [ columnGenerator ] [ columnConstraint ]
   |   columnName
-  |   tableConstraint
+  |   `tableConstraint`
 
 columnGenerator:
       DEFAULT expression

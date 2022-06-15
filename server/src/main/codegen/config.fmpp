@@ -32,6 +32,8 @@ data: {
       "org.apache.calcite.sql.ddl.SqlDdlNodes"
       "java.util.Map"
       "java.util.HashMap"
+      "org.apache.calcite.sql.ddl.SqlTableOptionName"
+      "org.apache.calcite.sql.ddl.SqlTableOption"
     ]
 
     # List of new keywords. Example: "DATABASES", "TABLES". If the keyword is
@@ -44,6 +46,31 @@ data: {
       "JAR"
       "FILE"
       "ARCHIVE"
+      "COMMENT"
+      "INDEX"
+      "AUTOEXTEND_SIZE"
+      "AUTO_INCREMENT"
+      "AVG_ROW_LENGTH"
+      "CHECKSUM"
+      "COMPRESSION"
+      "DIRECTORY"
+      "DELAY_KEY_WRITE"
+      "ENCRYPTION"
+      "ENGINE"
+      "ENGINE_ATTRIBUTE"
+      "INSERT_METHOD"
+      "KEY_BLOCK_SIZE"
+      "MAX_ROWS"
+      "MIN_ROWS"
+      "PACK_KEYS"
+      "PASSWORD"
+      "ROW_FORMAT"
+      "SECONDARY_ENGINE_ATTRIBUTE"
+      "STATS_AUTO_RECALC"
+      "STATS_PERSISTENT"
+      "STATS_SAMPLE_PAGES"
+      "TABLESPACE"
+
     ]
 
     # List of non-reserved keywords to add;

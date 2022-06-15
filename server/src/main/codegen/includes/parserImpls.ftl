@@ -99,6 +99,84 @@ void Option(List<SqlNode> list) :
     }
 }
 
+SqlNodeList TableOptions() :
+{
+    final Span s;
+    final List<SqlNode> list = new ArrayList<SqlNode>();
+}
+{
+    { s = span(); }
+
+        TableOption(list)
+        (
+            [<COMMA>]
+            TableOption(list)
+        )*
+
+    {
+        return new SqlNodeList(list, s.end(this));
+    }
+}
+
+void TableOption(List<SqlNode> list) :
+{
+    final Span s;
+    final SqlTableOptionName id;
+    final SqlNode value;
+}
+{
+    { s = span(); } id = TableOptionName()
+    <EQ>
+    (
+        value = Literal()
+    |
+        value = SimpleIdentifier()
+    |
+        <DEFAULT_> {value = new SqlIdentifier("DEFAULT", s.end(this));}
+    |
+        <DYNAMIC> {value = new SqlIdentifier("DYNAMIC", s.end(this));}
+    |
+        <NO> {value = new SqlIdentifier("NO", s.end(this));}
+    )
+    {
+        list.add(new SqlTableOption(id, value, s.end(this)));
+    }
+}
+
+SqlTableOptionName TableOptionName() :
+{
+}
+{
+  <AUTOEXTEND_SIZE> { return SqlTableOptionName.AUTOEXTEND_SIZE;}
+| <AUTO_INCREMENT> { return SqlTableOptionName.AUTO_INCREMENT;}
+| <AVG_ROW_LENGTH> { return SqlTableOptionName.AVG_ROW_LENGTH;}
+| [<DEFAULT_>] <CHARACTER> <SET> { return SqlTableOptionName.CHARACTER_SET;}
+| <CHECKSUM> { return SqlTableOptionName.CHECKSUM;}
+| [<DEFAULT_>] <COLLATE> { return SqlTableOptionName.COLLATE;}
+| <COMMENT> { return SqlTableOptionName.COMMENT;}
+| <COMPRESSION> { return SqlTableOptionName.COMPRESSION;}
+| <CONNECTION> { return SqlTableOptionName.CONNECTION;}
+| <DATA> <DIRECTORY> { return SqlTableOptionName.DATA_DIRECTORY;}
+| <INDEX> <DIRECTORY> { return SqlTableOptionName.INDEX_DIRECTORY;}
+| <DELAY_KEY_WRITE> { return SqlTableOptionName.DELAY_KEY_WRITE;}
+| <ENCRYPTION> { return SqlTableOptionName.ENCRYPTION;}
+| <ENGINE> { return SqlTableOptionName.ENGINE;}
+| <ENGINE_ATTRIBUTE> { return SqlTableOptionName.ENGINE_ATTRIBUTE;}
+| <INSERT_METHOD> { return SqlTableOptionName.INSERT_METHOD;}
+| <KEY_BLOCK_SIZE> { return SqlTableOptionName.KEY_BLOCK_SIZE;}
+| <MAX_ROWS> { return SqlTableOptionName.MAX_ROWS;}
+| <MIN_ROWS> { return SqlTableOptionName.MIN_ROWS;}
+| <PACK_KEYS> { return SqlTableOptionName.PACK_KEYS;}
+| <PASSWORD> { return SqlTableOptionName.PASSWORD;}
+| <ROW_FORMAT> { return SqlTableOptionName.ROW_FORMAT;}
+| <SECONDARY_ENGINE_ATTRIBUTE> { return SqlTableOptionName.SECONDARY_ENGINE_ATTRIBUTE;}
+| <STATS_AUTO_RECALC> { return SqlTableOptionName.STATS_AUTO_RECALC;}
+| <STATS_PERSISTENT> { return SqlTableOptionName.STATS_PERSISTENT;}
+| <STATS_SAMPLE_PAGES> { return SqlTableOptionName.STATS_SAMPLE_PAGES;}
+| <TABLESPACE> { return SqlTableOptionName.TABLESPACE;}
+| <UNION> { return SqlTableOptionName.UNION;}
+}
+
 SqlNodeList TableElementList() :
 {
     final Span s;
@@ -126,60 +204,66 @@ void TableElement(List<SqlNode> list) :
     final SqlNodeList columnList;
     final Span s = Span.of();
     final ColumnStrategy strategy;
+    SqlNode comment = null;
 }
 {
     LOOKAHEAD(2) id = SimpleIdentifier()
+    type = DataType()
+    nullable = NullableOptDefaultTrue()
     (
-        type = DataType()
-        nullable = NullableOptDefaultTrue()
+        [ <GENERATED> <ALWAYS> ] <AS> <LPAREN>
+        e = Expression(ExprContext.ACCEPT_SUB_QUERY) <RPAREN>
         (
-            [ <GENERATED> <ALWAYS> ] <AS> <LPAREN>
-            e = Expression(ExprContext.ACCEPT_SUB_QUERY) <RPAREN>
-            (
-                <VIRTUAL> { strategy = ColumnStrategy.VIRTUAL; }
-            |
-                <STORED> { strategy = ColumnStrategy.STORED; }
-            |
-                { strategy = ColumnStrategy.VIRTUAL; }
-            )
+            <VIRTUAL> { strategy = ColumnStrategy.VIRTUAL; }
         |
-            <DEFAULT_> e = Expression(ExprContext.ACCEPT_SUB_QUERY) {
-                strategy = ColumnStrategy.DEFAULT;
-            }
+            <STORED> { strategy = ColumnStrategy.STORED; }
         |
-            {
-                e = null;
-                strategy = nullable ? ColumnStrategy.NULLABLE
-                    : ColumnStrategy.NOT_NULLABLE;
-            }
+            { strategy = ColumnStrategy.VIRTUAL; }
         )
-        {
-            list.add(
-                SqlDdlNodes.column(s.add(id).end(this), id,
-                    type.withNullable(nullable), e, strategy));
+    |
+        <DEFAULT_> e = Expression(ExprContext.ACCEPT_SUB_QUERY) {
+            strategy = ColumnStrategy.DEFAULT;
         }
     |
-        { list.add(id); }
+        {
+            e = null;
+            strategy = nullable ? ColumnStrategy.NULLABLE
+                : ColumnStrategy.NOT_NULLABLE;
+        }
     )
-|
-    id = SimpleIdentifier() {
-        list.add(id);
+    [<COMMENT> comment = StringLiteral()]
+    {
+        list.add(
+            SqlDdlNodes.column(s.add(id).end(this), id,
+                type.withNullable(nullable), e, strategy, comment));
     }
+|
+    (
+        (<INDEX>|<KEY>) { s.add(this); } name = SimpleIdentifier()
+        columnList = ParenthesizedSimpleIdentifierList()
+        [<COMMENT> comment = StringLiteral()]
+        {
+            list.add(SqlDdlNodes.index(s.end(columnList), name, columnList, comment));
+        }
+    )
 |
     [ <CONSTRAINT> { s.add(this); } name = SimpleIdentifier() ]
     (
         <CHECK> { s.add(this); } <LPAREN>
-        e = Expression(ExprContext.ACCEPT_SUB_QUERY) <RPAREN> {
+        e = Expression(ExprContext.ACCEPT_SUB_QUERY) <RPAREN>
+        {
             list.add(SqlDdlNodes.check(s.end(this), name, e));
         }
     |
-        <UNIQUE> { s.add(this); }
-        columnList = ParenthesizedSimpleIdentifierList() {
+        <UNIQUE> { s.add(this); } [<INDEX>|<KEY>]
+        columnList = ParenthesizedSimpleIdentifierList()
+        {
             list.add(SqlDdlNodes.unique(s.end(columnList), name, columnList));
         }
     |
         <PRIMARY>  { s.add(this); } <KEY>
-        columnList = ParenthesizedSimpleIdentifierList() {
+        columnList = ParenthesizedSimpleIdentifierList()
+        {
             list.add(SqlDdlNodes.primary(s.end(columnList), name, columnList));
         }
     )
@@ -247,15 +331,17 @@ SqlCreate SqlCreateTable(Span s, boolean replace) :
     final boolean ifNotExists;
     final SqlIdentifier id;
     SqlNodeList tableElementList = null;
+    SqlNodeList tableOptions = null;
     SqlNode query = null;
 }
 {
     <TABLE> ifNotExists = IfNotExistsOpt() id = CompoundIdentifier()
     [ tableElementList = TableElementList() ]
+    [ tableOptions = TableOptions() ]
     [ <AS> query = OrderedQueryOrExpr(ExprContext.ACCEPT_QUERY) ]
     {
         return SqlDdlNodes.createTable(s.end(this), replace, ifNotExists, id,
-            tableElementList, query);
+            tableElementList, tableOptions, query);
     }
 }
 

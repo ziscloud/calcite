@@ -46,16 +46,18 @@ public class SqlColumnDeclaration extends SqlCall {
   public final SqlDataTypeSpec dataType;
   public final @Nullable SqlNode expression;
   public final ColumnStrategy strategy;
+  private final @Nullable SqlNode comment;
 
   /** Creates a SqlColumnDeclaration; use {@link SqlDdlNodes#column}. */
   SqlColumnDeclaration(SqlParserPos pos, SqlIdentifier name,
       SqlDataTypeSpec dataType, @Nullable SqlNode expression,
-      ColumnStrategy strategy) {
+      ColumnStrategy strategy, @Nullable SqlNode comment) {
     super(pos);
     this.name = name;
     this.dataType = dataType;
     this.expression = expression;
     this.strategy = strategy;
+    this.comment = comment;
   }
 
   @Override public SqlOperator getOperator() {
@@ -88,6 +90,9 @@ public class SqlColumnDeclaration extends SqlCall {
       default:
         throw new AssertionError("unexpected: " + strategy);
       }
+    }
+    if (null != comment) {
+      comment.unparse(writer, 0, 0);
     }
   }
 

@@ -308,10 +308,10 @@ class ServerTest {
         Statement s = c.createStatement()) {
       boolean b = s.execute("create type mytype as (i int, j int)");
       assertFalse(b);
-      b = s.execute("create table w (i int not null, j mytype)");
+      b = s.execute("create table w (i varchar(1) not null, j mytype)");
       assertFalse(b);
       int x = s.executeUpdate("insert into w "
-          + "values (1, mytype(1, 1))");
+          + "values ('1', mytype(1, 1))");
       assertEquals(x, 1);
 
       try (ResultSet r = s.executeQuery("select * from w")) {

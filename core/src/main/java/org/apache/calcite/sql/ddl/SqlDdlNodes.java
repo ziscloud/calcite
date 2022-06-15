@@ -17,13 +17,7 @@
 package org.apache.calcite.sql.ddl;
 
 import org.apache.calcite.schema.ColumnStrategy;
-import org.apache.calcite.sql.SqlCollation;
-import org.apache.calcite.sql.SqlDataTypeSpec;
-import org.apache.calcite.sql.SqlDrop;
-import org.apache.calcite.sql.SqlIdentifier;
-import org.apache.calcite.sql.SqlNode;
-import org.apache.calcite.sql.SqlNodeList;
-import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.*;
 import org.apache.calcite.sql.parser.SqlParserPos;
 
 /**
@@ -55,9 +49,9 @@ public class SqlDdlNodes {
 
   /** Creates a CREATE TABLE. */
   public static SqlCreateTable createTable(SqlParserPos pos, boolean replace,
-      boolean ifNotExists, SqlIdentifier name, SqlNodeList columnList,
+      boolean ifNotExists, SqlIdentifier name, SqlNodeList columnList, SqlNodeList tableOptions,
       SqlNode query) {
-    return new SqlCreateTable(pos, replace, ifNotExists, name, columnList,
+    return new SqlCreateTable(pos, replace, ifNotExists, name, columnList, tableOptions,
         query);
   }
 
@@ -121,8 +115,8 @@ public class SqlDdlNodes {
 
   /** Creates a column declaration. */
   public static SqlNode column(SqlParserPos pos, SqlIdentifier name,
-      SqlDataTypeSpec dataType, SqlNode expression, ColumnStrategy strategy) {
-    return new SqlColumnDeclaration(pos, name, dataType, expression, strategy);
+      SqlDataTypeSpec dataType, SqlNode expression, ColumnStrategy strategy, SqlNode comment) {
+    return new SqlColumnDeclaration(pos, name, dataType, expression, strategy, comment);
   }
 
   /** Creates an attribute definition. */
@@ -151,6 +145,11 @@ public class SqlDdlNodes {
         return PRIMARY;
       }
     };
+  }
+
+  public static SqlIndex index(SqlParserPos pos, SqlIdentifier name,
+      SqlNodeList columnList, SqlNode comment) {
+    return new SqlIndex(pos, name, columnList, comment);
   }
 
   /** File type for CREATE FUNCTION. */

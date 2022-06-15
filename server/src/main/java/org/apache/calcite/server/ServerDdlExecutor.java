@@ -54,17 +54,7 @@ import org.apache.calcite.sql.SqlNodeList;
 import org.apache.calcite.sql.SqlSelect;
 import org.apache.calcite.sql.SqlUtil;
 import org.apache.calcite.sql.SqlWriterConfig;
-import org.apache.calcite.sql.ddl.SqlAttributeDefinition;
-import org.apache.calcite.sql.ddl.SqlColumnDeclaration;
-import org.apache.calcite.sql.ddl.SqlCreateForeignSchema;
-import org.apache.calcite.sql.ddl.SqlCreateFunction;
-import org.apache.calcite.sql.ddl.SqlCreateMaterializedView;
-import org.apache.calcite.sql.ddl.SqlCreateSchema;
-import org.apache.calcite.sql.ddl.SqlCreateTable;
-import org.apache.calcite.sql.ddl.SqlCreateType;
-import org.apache.calcite.sql.ddl.SqlCreateView;
-import org.apache.calcite.sql.ddl.SqlDropObject;
-import org.apache.calcite.sql.ddl.SqlDropSchema;
+import org.apache.calcite.sql.ddl.*;
 import org.apache.calcite.sql.dialect.CalciteSqlDialect;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlAbstractParserImpl;
@@ -384,6 +374,7 @@ public class ServerDdlExecutor extends DdlExecutorImpl {
             RESOURCE.schemaExists(pair.right));
       }
     }
+    //TODO shunyun 2022/6/5:这里应该用schema factory比较合理
     final Schema subSchema = new AbstractSchema();
     pair.left.add(pair.right, subSchema);
   }
@@ -468,6 +459,8 @@ public class ServerDdlExecutor extends DdlExecutorImpl {
         b.add(ColumnDef.of(c.e, f.getType(), strategy));
         builder.add(id.getSimple(), f.getType());
         storedBuilder.add(id.getSimple(), f.getType());
+      } else if(c.e instanceof SqlCheckConstraint) {
+
       } else {
         throw new AssertionError(c.e.getClass());
       }
@@ -531,9 +524,10 @@ public class ServerDdlExecutor extends DdlExecutorImpl {
           final SqlAttributeDefinition attributeDef =
               (SqlAttributeDefinition) def;
           final SqlDataTypeSpec typeSpec = attributeDef.dataType;
-          final RelDataType type = typeSpec.deriveType(validator);
+          final RelDataType type = typeSpec.deriveType(validator, typeSpec.getNullable());
           builder.add(attributeDef.name.getSimple(), type);
         }
+        builder.nullableRecord(true);
         return builder.build();
       }
     });
