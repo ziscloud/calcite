@@ -35,6 +35,7 @@ public class SqlPartitionOptions extends SqlCall {
       new SqlSpecialOperator("PARTITION BY", SqlKind.PARTITION);
 
   private final SqlNode type;
+  private final @Nullable SqlNode linear;
   private final @Nullable SqlNode e;
   private final @Nullable SqlNode alg;
   private final @Nullable SqlNode num;
@@ -45,10 +46,11 @@ public class SqlPartitionOptions extends SqlCall {
   /**
    * Creates a SqlKeyConstraint.
    */
-  SqlPartitionOptions(PartitionType type, @Nullable SqlNode e, @Nullable SqlNode alg,
+  SqlPartitionOptions(@Nullable SqlNode linear, PartitionType type, @Nullable SqlNode e, @Nullable SqlNode alg,
       SqlNodeList columnList, @Nullable SqlNode num, @Nullable SqlNodeList partitions,
       SqlParserPos pos) {
     super(pos);
+    this.linear = linear;
     this.e = e;
     this.columnList = columnList;
     this.type = new SqlIdentifier(type.name(), pos);
@@ -71,7 +73,11 @@ public class SqlPartitionOptions extends SqlCall {
   @Override
   public void unparse(SqlWriter writer, int leftPrec, int rightPrec) {
     writer.keyword("PARTITION BY");
-    type.unparse(writer, 0, 0);
+    if (linear != null) {
+      writer.keyword("LINEAR");
+    }
+
+    writer.keyword(type.toString());
 
     if (alg != null) {
       writer.keyword("ALGORITHM = ");
@@ -83,7 +89,12 @@ public class SqlPartitionOptions extends SqlCall {
     }
 
     if (columnList != null) {
-      columnList.unparse(writer, 0, 0);
+      SqlWriter.Frame frame = writer.startList("(", ")");
+      for (SqlNode a : columnList) {
+        writer.sep(",");
+        a.unparse(writer, 0, 0);
+      }
+      writer.endList(frame);
     }
 
     if (num != null) {
@@ -92,7 +103,12 @@ public class SqlPartitionOptions extends SqlCall {
     }
 
     if (partitions != null) {
-      partitions.unparse(writer, 0, 0);
+      SqlWriter.Frame frame = writer.startList("(", ")");
+      for (SqlNode a : partitions) {
+        writer.sep(",");
+        a.unparse(writer, 0, 0);
+      }
+      writer.endList(frame);
     }
   }
 }

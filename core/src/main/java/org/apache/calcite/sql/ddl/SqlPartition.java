@@ -89,22 +89,20 @@ public class SqlPartition extends SqlCall {
       if(e != null) {
         e.unparse(writer, 0, 0);
       }
-      if (valueList != null) {
-        valueList.unparse(writer, 0, 0);
-      }
+
+      unparseValueList(writer);
+
       if (max != null) {
-        max.unparse(writer, 0, 0);
+        writer.keyword("MAXVALUE");
       }
     }
     if (type.getSimple().equals("IN")) {
       writer.keyword("IN");
-      if (valueList != null) {
-        valueList.unparse(writer, 0, 0);
-      }
+      unparseValueList(writer);
     }
     if (engineName != null) {
       writer.keyword("ENGINE");
-      engineName.unparse(writer, 0, 0);
+      writer.keyword(engineName.toString());
     }
     if (comment!=null) {
       writer.keyword("COMMENT");
@@ -131,6 +129,21 @@ public class SqlPartition extends SqlCall {
     if (tablespace!=null) {
       writer.keyword("TABLESPACE");
       tablespace.unparse(writer, 0, 0);
+    }
+  }
+
+  private void unparseValueList(SqlWriter writer) {
+    if (valueList != null) {
+      SqlWriter.Frame frame = writer.startList("(", ")");
+      for (SqlNode a : valueList) {
+        writer.sep(",");
+        if ("MAXVALUE".equals(a.toString())) {
+          writer.keyword("MAXVALUE");
+        } else {
+          a.unparse(writer, 0, 0);
+        }
+      }
+      writer.endList(frame);
     }
   }
 }

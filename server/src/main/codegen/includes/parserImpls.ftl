@@ -350,9 +350,11 @@ SqlCreate SqlCreateTable(Span s, boolean replace) :
 SqlPartitionOptions PartitionOptions() :
 {
     final Span s;
+    final Span s0;
     final Span s1;
     PartitionType type = null;
     SqlNode e = null;
+    SqlNode linear = null;
     SqlNode alg = null;
     SqlNode num = null;
     SqlNodeList columnList = null;
@@ -362,7 +364,7 @@ SqlPartitionOptions PartitionOptions() :
 {
     <BY> { s = span(); }
     (
-        [ <LINEAR> ]
+        [ <LINEAR> { s0 = span(); linear = new SqlIdentifier("LINEAR", s0.end(this)); } ]
         (
             <HASH> {type = PartitionType.HASH;}
             <LPAREN> e = Expression(ExprContext.ACCEPT_NON_QUERY) <RPAREN>
@@ -394,7 +396,7 @@ SqlPartitionOptions PartitionOptions() :
     [ <PARTITIONS> num = Literal() ]
     [ partitions = Partitions() ]
     {
-        return SqlDdlNodes.createPartitionOptions(type, e, alg, columnList, num, partitions, s.end(this));
+        return SqlDdlNodes.createPartitionOptions(linear, type, e, alg, columnList, num, partitions, s.end(this));
     }
 }
 
@@ -440,7 +442,7 @@ void Partition(List<SqlNode> list) :
     [
         <VALUES>
         (
-            <LESS> <THAN> { s0 = span(); } { type = new SqlIdentifier("LESS", s0.end(this)); }
+            <LESS> <THAN> { s0 = span(); type = new SqlIdentifier("LESS", s0.end(this)); }
             (
                 { s2 = span(); }
                 <LPAREN>

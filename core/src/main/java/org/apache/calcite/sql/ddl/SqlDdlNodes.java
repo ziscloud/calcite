@@ -78,9 +78,9 @@ public class SqlDdlNodes {
     return new SqlPartition(name, type, e, valueList, max, engineName, comment, dataDir, indexDir, maxRow ,minRow, tablespace, pos);
   }
 
-  public static SqlPartitionOptions createPartitionOptions(PartitionType type, SqlNode e, SqlNode alg,
+  public static SqlPartitionOptions createPartitionOptions(SqlNode linear, PartitionType type, SqlNode e, SqlNode alg,
       SqlNodeList columnList, SqlNode num, SqlNodeList partitions, SqlParserPos pos) {
-    return new SqlPartitionOptions(type, e, alg, columnList, num, partitions, pos);
+    return new SqlPartitionOptions(linear, type, e, alg, columnList, num, partitions, pos);
   }
 
   /** Creates a CREATE FUNCTION. */
