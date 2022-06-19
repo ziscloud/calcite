@@ -39,6 +39,7 @@ public class SqlCreateTable extends SqlCreate {
   public final SqlIdentifier name;
   public final @Nullable SqlNodeList columnList;
   public final @Nullable SqlNodeList tableOptions;
+  public final @Nullable SqlPartitionOptions partitionOptions;
   public final @Nullable SqlNode query;
 
   private static final SqlOperator OPERATOR =
@@ -47,11 +48,13 @@ public class SqlCreateTable extends SqlCreate {
   /** Creates a SqlCreateTable. */
   protected SqlCreateTable(SqlParserPos pos, boolean replace, boolean ifNotExists,
       SqlIdentifier name, @Nullable SqlNodeList columnList, @Nullable SqlNodeList tableOptions,
+      @Nullable SqlPartitionOptions partitionOptions,
       @Nullable SqlNode query) {
     super(OPERATOR, pos, replace, ifNotExists);
     this.name = Objects.requireNonNull(name, "name");
     this.columnList = columnList; // may be null
     this.tableOptions = tableOptions; // may be null
+    this.partitionOptions = partitionOptions;
     this.query = query; // for "CREATE TABLE ... AS query"; may be null
   }
 
@@ -74,6 +77,9 @@ public class SqlCreateTable extends SqlCreate {
         c.unparse(writer, 0, 0);
       }
       writer.endList(frame);
+    }
+    if (partitionOptions != null) {
+      partitionOptions.unparse(writer, 0, 0);
     }
     if (query != null) {
       writer.keyword("AS");

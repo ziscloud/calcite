@@ -34,6 +34,9 @@ data: {
       "java.util.HashMap"
       "org.apache.calcite.sql.ddl.SqlTableOptionName"
       "org.apache.calcite.sql.ddl.SqlTableOption"
+      "org.apache.calcite.sql.ddl.PartitionType"
+      "org.apache.calcite.sql.ddl.SqlPartitionOptions"
+      "org.apache.calcite.sql.ddl.SqlPartition"
     ]
 
     # List of new keywords. Example: "DATABASES", "TABLES". If the keyword is
@@ -70,7 +73,15 @@ data: {
       "STATS_PERSISTENT"
       "STATS_SAMPLE_PAGES"
       "TABLESPACE"
-
+      "LINEAR"
+      "HASH"
+      "ALGORITHM"
+      "LIST"
+      "COLUMNS"
+      "PARTITIONS"
+      "LESS"
+      "THAN"
+      "STORAGE"
     ]
 
     # List of non-reserved keywords to add;
@@ -84,6 +95,15 @@ data: {
       "JAR"
       "FILE"
       "ARCHIVE"
+      "LINEAR"
+      "HASH"
+      "ALGORITHM"
+      "LIST"
+      "COLUMNS"
+      "PARTITIONS"
+      "LESS"
+      "THAN"
+      "STORAGE"
     ]
 
     # List of methods for parsing extensions to "CREATE [OR REPLACE]" calls.

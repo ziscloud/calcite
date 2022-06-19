@@ -20,6 +20,8 @@ import org.apache.calcite.schema.ColumnStrategy;
 import org.apache.calcite.sql.*;
 import org.apache.calcite.sql.parser.SqlParserPos;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 /**
  * Utilities concerning {@link SqlNode} for DDL.
  */
@@ -49,10 +51,9 @@ public class SqlDdlNodes {
 
   /** Creates a CREATE TABLE. */
   public static SqlCreateTable createTable(SqlParserPos pos, boolean replace,
-      boolean ifNotExists, SqlIdentifier name, SqlNodeList columnList, SqlNodeList tableOptions,
+      boolean ifNotExists, SqlIdentifier name, SqlNodeList columnList, SqlNodeList tableOptions, SqlPartitionOptions partitionOptions,
       SqlNode query) {
-    return new SqlCreateTable(pos, replace, ifNotExists, name, columnList, tableOptions,
-        query);
+    return new SqlCreateTable(pos, replace, ifNotExists, name, columnList, tableOptions, partitionOptions, query);
   }
 
   /** Creates a CREATE VIEW. */
@@ -67,6 +68,19 @@ public class SqlDdlNodes {
       SqlIdentifier name, SqlNodeList columnList, SqlNode query) {
     return new SqlCreateMaterializedView(pos, replace, ifNotExists, name,
         columnList, query);
+  }
+
+  public static SqlPartition createPartition(SqlIdentifier name, SqlIdentifier type, SqlNode e,
+      SqlNodeList valueList, SqlNode max, SqlIdentifier engineName,
+      SqlNode comment, SqlNode dataDir, SqlNode indexDir,
+      SqlNode maxRow, SqlNode minRow, SqlNode tablespace,
+      SqlParserPos pos) {
+    return new SqlPartition(name, type, e, valueList, max, engineName, comment, dataDir, indexDir, maxRow ,minRow, tablespace, pos);
+  }
+
+  public static SqlPartitionOptions createPartitionOptions(PartitionType type, SqlNode e, SqlNode alg,
+      SqlNodeList columnList, SqlNode num, SqlNodeList partitions, SqlParserPos pos) {
+    return new SqlPartitionOptions(type, e, alg, columnList, num, partitions, pos);
   }
 
   /** Creates a CREATE FUNCTION. */
